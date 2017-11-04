@@ -1,0 +1,9 @@
+#
+#     Survive The Night
+#   Message Configuration
+#
+
+prefix: "&8&l| &b&lSurvive &8|&r"
+
+no-permission: "<prefix> &cYou do not have permission to execute this command."
+command-not-found: "<prefix> &cCommand not found, try /<label> for help."

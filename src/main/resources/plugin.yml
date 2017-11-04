@@ -6,6 +6,37 @@ description: "A Halloween minigame from The HiveMC Network."
 website: "https://github.com/redraskal/SurviveTheNight"
 
 commands:
-  survivethenight:
+  survive:
     description: "Game-mode command."
-    aliases: [survive, stn]
+    aliases: [stn]
+
+permissions:
+  survive.*:
+    children:
+      survive.player.*: true
+      survive.arena.*: true
+    default: op
+  survive.player.*:
+    children:
+      survive.player.help: true
+      survive.player.join: true
+      survive.player.quit: true
+    default: true
+  survive.player.help:
+    default: true
+  survive.player.join:
+    default: true
+  survive.player.leave:
+    default: true
+  survive.arena.*:
+    children:
+      survive.arena.help: true
+      survive.arena.create: true
+      survive.arena.delete: true
+    default: op
+  survive.arena.help:
+    default: op
+  survive.arena.create:
+    default: op
+  survive.arena.delete:
+    default: op
