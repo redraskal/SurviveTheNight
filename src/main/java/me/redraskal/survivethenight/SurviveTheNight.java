@@ -34,7 +34,9 @@ public class SurviveTheNight extends JavaPlugin {
     public String buildMessage(String message) {
         String prefix = this.getMessageConfig().getString("prefix");
         return ChatColor.translateAlternateColorCodes('&',
-                message.replace("<prefix>", prefix));
+                message.replace("<prefix>", prefix)
+                .replace("<pipe>", "⏐")
+                .replace("<doublepipe>", "▎"));
     }
 
     public String buildConfigMessage(String key) {

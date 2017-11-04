@@ -60,11 +60,12 @@ public class MainCommand implements CommandExecutor {
                     .replace("<label>", label));
         } else {
             if(player.hasPermission("survive.player.help")) {
+                player.sendMessage("");
                 player.sendMessage(this.getSurviveTheNight().buildMessage("<prefix> Player commands:"));
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&7/" + label + " &fjoin &b(arena id)&3: Joins an arena"));
+                        "&7 /" + label + " &fjoin &b(arena id)&3: Joins an arena"));
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&7/" + label + " &fleave&3: Leaves the arena"));
+                        "&7 /" + label + " &fleave&3: Leaves the arena"));
             } else {
                 player.sendMessage(this.getSurviveTheNight().buildConfigMessage("no-permission"));
             }

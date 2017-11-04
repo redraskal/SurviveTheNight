@@ -3,7 +3,7 @@
 #   Message Configuration
 #
 
-prefix: "&8&l| &b&lSurvive &8|&r"
+prefix: "&8&l<doublepipe>&r &9&lSur&d&lv&c&li&6&lv&e&le &8&l<pipe>&r"
 
 no-permission: "<prefix> &cYou do not have permission to execute this command."
 command-not-found: "<prefix> &cCommand not found, try /<label> for help."

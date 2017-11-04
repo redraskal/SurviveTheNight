@@ -25,37 +25,38 @@ public class ArenaHelpCommand extends SubCommand {
 
     @Override
     public void execute(Player player, SurviveTheNight surviveTheNight, String label, String[] args) {
+        player.sendMessage("");
         player.sendMessage(surviveTheNight.buildMessage("<prefix> Arena commands:"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena create &b<arena id>&3: Creates an arena"));
+                "&7 /" + label + " &farena create &b<arena id>&3: Creates an arena"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena delete &b<arena id>&3: Deletes an arena"));
+                "&7 /" + label + " &farena delete &b<arena id>&3: Deletes an arena"));
         player.sendMessage("");
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena setlobby &b<arena id>&3: Sets the game lobby position"));
+                "&7 /" + label + " &farena setlobby &b<arena id>&3: Sets the game lobby position"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena setmainlobby &b<arena id>&3: Sets the main lobby position"));
+                "&7 /" + label + " &farena setmainlobby &b<arena id>&3: Sets the main lobby position"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena addspawn &b<arena id>&3: Adds a spawn position"));
+                "&7 /" + label + " &farena addspawn &b<arena id>&3: Adds a spawn position"));
         player.sendMessage("");
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena setminplayers &b<arena id> <#>"));
+                "&7 /" + label + " &farena setminplayers &b<arena id> <#>"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena setmaxplayers &b<arena id> <#>"));
+                "&7 /" + label + " &farena setmaxplayers &b<arena id> <#>"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena setgeneratorsneeded &b<arena id> <#>"));
+                "&7 /" + label + " &farena setgeneratorsneeded &b<arena id> <#>"));
         player.sendMessage("");
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena addgenerator &b<arena id>&3: Adds a generator (look at the block)"));
+                "&7 /" + label + " &farena addgenerator &b<arena id>&3: Adds a generator (look at the block)"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena wand&3: Gives you a position wand"));
+                "&7 /" + label + " &farena wand&3: Gives you a position wand"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena setbounds&3: Sets the arena bounds"));
+                "&7 /" + label + " &farena setbounds&3: Sets the arena bounds"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena adddoor &b<arena id>&3: Adds a door (go inside the door)"));
+                "&7 /" + label + " &farena adddoor &b<arena id>&3: Adds a door (go inside the door)"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena addarea &b<arena id> <name>&3: Adds an area"));
+                "&7 /" + label + " &farena addarea &b<arena id> <name>&3: Adds an area"));
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                "&7/" + label + " &farena addgate &b<arena id>&3: Adds an exit gate"));
+                "&7 /" + label + " &farena addgate &b<arena id>&3: Adds an exit gate"));
     }
 }
