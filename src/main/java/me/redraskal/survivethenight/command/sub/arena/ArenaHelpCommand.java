@@ -1,4 +1,4 @@
-package me.redraskal.survivethenight.command.sub;
+package me.redraskal.survivethenight.command.sub.arena;
 
 import me.redraskal.survivethenight.SurviveTheNight;
 import me.redraskal.survivethenight.command.SubCommand;

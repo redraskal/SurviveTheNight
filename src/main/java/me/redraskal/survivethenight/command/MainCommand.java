@@ -2,7 +2,11 @@ package me.redraskal.survivethenight.command;
 
 import lombok.Getter;
 import me.redraskal.survivethenight.SurviveTheNight;
-import me.redraskal.survivethenight.command.sub.ArenaHelpCommand;
+import me.redraskal.survivethenight.command.sub.arena.ArenaCreateCommand;
+import me.redraskal.survivethenight.command.sub.arena.ArenaDeleteCommand;
+import me.redraskal.survivethenight.command.sub.arena.ArenaHelpCommand;
+import me.redraskal.survivethenight.command.sub.player.PlayerJoinCommand;
+import me.redraskal.survivethenight.command.sub.player.PlayerLeaveCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,9 +29,14 @@ public class MainCommand implements CommandExecutor {
 
     public MainCommand(SurviveTheNight surviveTheNight) {
         this.surviveTheNight = surviveTheNight;
-
         this.subCommands = new ArrayList<>();
+
+        this.subCommands.add(new PlayerJoinCommand());
+        this.subCommands.add(new PlayerLeaveCommand());
+
         this.subCommands.add(new ArenaHelpCommand());
+        this.subCommands.add(new ArenaCreateCommand());
+        this.subCommands.add(new ArenaDeleteCommand());
     }
 
     @Override
@@ -43,9 +52,9 @@ public class MainCommand implements CommandExecutor {
                 int check = subArgs.length;
                 if(args.length < check) continue;
                 int correct = 0;
-                for(int i=0; i<args.length; i++) {
+                for(int i=0; i<check; i++) {
                     if(args[i].equals(subArgs[i])) correct++;
-                    if(correct == check) {
+                    if(correct >= check) {
                         if(!subCommand.permission().isEmpty()
                                 && !player.hasPermission(subCommand.permission())) {
                             player.sendMessage(this.getSurviveTheNight().buildConfigMessage("no-permission"));
