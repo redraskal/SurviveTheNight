@@ -47,6 +47,8 @@ public class MainCommand implements CommandExecutor {
         }
         Player player = (Player) sender;
         if(args.length > 0) {
+            SubCommand bestCommand = null;
+            int bestLength = 0;
             for(SubCommand subCommand : subCommands) {
                 String[] subArgs = subCommand.name().split(" ");
                 int check = subArgs.length;
@@ -55,18 +57,24 @@ public class MainCommand implements CommandExecutor {
                 for(int i=0; i<check; i++) {
                     if(args[i].equals(subArgs[i])) correct++;
                     if(correct >= check) {
-                        if(!subCommand.permission().isEmpty()
-                                && !player.hasPermission(subCommand.permission())) {
-                            player.sendMessage(this.getSurviveTheNight().buildConfigMessage("no-permission"));
-                            return false;
+                        if(bestCommand == null || (check > bestLength)) {
+                            bestCommand = subCommand;
+                            bestLength = check;
                         }
-                        subCommand.execute(player, surviveTheNight, label, args);
-                        return false;
                     }
                 }
             }
-            player.sendMessage(this.getSurviveTheNight().buildConfigMessage("command-not-found")
-                    .replace("<label>", label));
+            if(bestCommand != null) {
+                if(!bestCommand.permission().isEmpty()
+                        && !player.hasPermission(bestCommand.permission())) {
+                    player.sendMessage(this.getSurviveTheNight().buildConfigMessage("no-permission"));
+                    return false;
+                }
+                bestCommand.execute(player, surviveTheNight, label, args);
+            } else {
+                player.sendMessage(this.getSurviveTheNight().buildConfigMessage("command-not-found")
+                        .replace("<label>", label));
+            }
         } else {
             if(player.hasPermission("survive.player.help")) {
                 player.sendMessage("");
