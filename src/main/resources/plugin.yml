@@ -1,0 +1,11 @@
+main: me.redraskal.survivethenight.SurviveTheNight
+name: ${project.name}
+author: redraskal
+version: ${project.version}
+description: "A Halloween minigame from The HiveMC Network."
+website: "https://github.com/redraskal/SurviveTheNight"
+
+commands:
+  survivethenight:
+    description: "Game-mode command."
+    aliases: [survive, stn]
