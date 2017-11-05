@@ -5,6 +5,8 @@ import me.redraskal.survivethenight.SurviveTheNight;
 import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.utils.ConfigUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,19 +34,27 @@ public class ArenaManager {
             int id = Integer.parseInt(key);
 
             Arena arena = new Arena(this, id);
-            arena.setLobbyPosition(ConfigUtils.decodeLocation(arenaConfig.getString("" + id + ".lobbyPosition")));
-            arena.setMainLobbyPosition(ConfigUtils.decodeLocation(arenaConfig.getString("" + id + ".mainLobbyPosition")));
-            arena.setSpawnPositions(ConfigUtils.decodeLocationList(arenaConfig.getStringList("" + id + ".spawnPositions")));
+            if(!arenaConfig.getString("" + id + ".lobbyPosition").isEmpty())
+                arena.setLobbyPosition(ConfigUtils.decodeLocation(arenaConfig.getString("" + id + ".lobbyPosition")));
+            if(!arenaConfig.getString("" + id + ".mainLobbyPosition").isEmpty())
+                arena.setMainLobbyPosition(ConfigUtils.decodeLocation(arenaConfig.getString("" + id + ".mainLobbyPosition")));
+            if(!arenaConfig.getString("" + id + ".spawnPositions").isEmpty())
+                arena.setSpawnPositions(ConfigUtils.decodeLocationList(arenaConfig.getStringList("" + id + ".spawnPositions")));
 
             arena.setMinPlayers(arenaConfig.getInt("" + id + ".minPlayers"));
             arena.setMaxPlayers(arenaConfig.getInt("" + id + ".maxPlayers"));
             arena.setGeneratorsNeeded(arenaConfig.getInt("" + id + ".generatorsNeeded"));
 
-            arena.setGenerators(ConfigUtils.decodeBlockList(arenaConfig.getStringList("" + id + ".generators")));
-            arena.setBounds(ConfigUtils.decodeCuboid(arenaConfig.getString("" + id + ".bounds")));
-            arena.setDoors(ConfigUtils.decodeCuboidList(arenaConfig.getStringList("" + id + ".doors")));
-            arena.setAreas(ConfigUtils.decodeAreaMap(arenaConfig.getStringList("" + id + ".areas")));
-            arena.setGates(ConfigUtils.decodeCuboidList(arenaConfig.getStringList("" + id + ".gates")));
+            if(!arenaConfig.getString("" + id + ".generators").isEmpty())
+                arena.setGenerators(ConfigUtils.decodeBlockList(arenaConfig.getStringList("" + id + ".generators")));
+            if(arenaConfig.get("" + id + ".bounds") != null)
+                arena.setBounds(ConfigUtils.decodeCuboid(arenaConfig.getString("" + id + ".bounds")));
+            if(!arenaConfig.getString("" + id + ".doors").isEmpty())
+                arena.setDoors(ConfigUtils.decodeCuboidMap(arenaConfig.getStringList("" + id + ".doors")));
+            if(!arenaConfig.getString("" + id + ".areas").isEmpty())
+                arena.setAreas(ConfigUtils.decodeAreaMap(arenaConfig.getStringList("" + id + ".areas")));
+            if(!arenaConfig.getString("" + id + ".gates").isEmpty())
+                arena.setGates(ConfigUtils.decodeCuboidList(arenaConfig.getStringList("" + id + ".gates")));
 
             arenaMap.put(id, arena);
         }
@@ -57,6 +67,13 @@ public class ArenaManager {
         return true;
     }
 
+    public Arena getArena(Player player) {
+        for(Arena arena : arenaMap.values()) {
+            if(arena.getPlayers().contains(player)) return arena;
+        }
+        return null;
+    }
+
     public boolean deleteArena(int id) {
         if(!this.getArenaMap().containsKey(id)) return false;
 
@@ -64,6 +81,7 @@ public class ArenaManager {
         arenaConfig.set("" + id, null);
 
         this.getSurviveTheNight().saveArenaConfig();
+        HandlerList.unregisterAll(this.getArenaMap().get(id).getArenaListener());
         arenaMap.remove(id);
         return true;
     }
@@ -74,19 +92,19 @@ public class ArenaManager {
         Arena arena = arenaMap.get(id);
         YamlConfiguration arenaConfig = this.getSurviveTheNight().getArenaConfig();
 
-        arenaConfig.set("" + id + ".lobbyPosition", ConfigUtils.encodeLocation(arena.getLobbyPosition()));
-        arenaConfig.set("" + id + ".mainLobbyPosition", ConfigUtils.encodeLocation(arena.getMainLobbyPosition()));
-        arenaConfig.set("" + id + ".spawnPositions", ConfigUtils.encodeLocationList(arena.getSpawnPositions()));
+        if(arena.getLobbyPosition() != null) arenaConfig.set("" + id + ".lobbyPosition", ConfigUtils.encodeLocation(arena.getLobbyPosition()));
+        if(arena.getMainLobbyPosition() != null) arenaConfig.set("" + id + ".mainLobbyPosition", ConfigUtils.encodeLocation(arena.getMainLobbyPosition()));
+        if(arena.getSpawnPositions() != null) arenaConfig.set("" + id + ".spawnPositions", ConfigUtils.encodeLocationList(arena.getSpawnPositions()));
 
         arenaConfig.set("" + id + ".minPlayers", arena.getMinPlayers());
         arenaConfig.set("" + id + ".maxPlayers", arena.getMaxPlayers());
         arenaConfig.set("" + id + ".generatorsNeeded", arena.getGeneratorsNeeded());
 
-        arenaConfig.set("" + id + ".generators", ConfigUtils.encodeBlockList(arena.getGenerators()));
-        arenaConfig.set("" + id + ".bounds", ConfigUtils.encodeCuboid(arena.getBounds()));
-        arenaConfig.set("" + id + ".doors", ConfigUtils.encodeCuboidList(arena.getDoors()));
-        arenaConfig.set("" + id + ".areas", ConfigUtils.encodeAreaMap(arena.getAreas()));
-        arenaConfig.set("" + id + ".gates", ConfigUtils.encodeCuboidList(arena.getGates()));
+        if(arena.getGenerators() != null) arenaConfig.set("" + id + ".generators", ConfigUtils.encodeBlockList(arena.getGenerators()));
+        if(arena.getBounds() != null) arenaConfig.set("" + id + ".bounds", ConfigUtils.encodeCuboid(arena.getBounds()));
+        if(arena.getDoors() != null) arenaConfig.set("" + id + ".doors", ConfigUtils.encodeCuboidMap(arena.getDoors()));
+        if(arena.getAreas() != null) arenaConfig.set("" + id + ".areas", ConfigUtils.encodeAreaMap(arena.getAreas()));
+        if(arena.getGates() != null) arenaConfig.set("" + id + ".gates", ConfigUtils.encodeCuboidList(arena.getGates()));
 
         this.getSurviveTheNight().saveArenaConfig();
         return true;

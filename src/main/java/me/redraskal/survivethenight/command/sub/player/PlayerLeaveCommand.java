@@ -2,6 +2,8 @@ package me.redraskal.survivethenight.command.sub.player;
 
 import me.redraskal.survivethenight.SurviveTheNight;
 import me.redraskal.survivethenight.command.SubCommand;
+import me.redraskal.survivethenight.game.Arena;
+import me.redraskal.survivethenight.manager.ArenaManager;
 import org.bukkit.entity.Player;
 
 /**
@@ -24,6 +26,15 @@ public class PlayerLeaveCommand extends SubCommand {
 
     @Override
     public void execute(Player player, SurviveTheNight surviveTheNight, String label, String[] args) {
-        player.sendMessage(surviveTheNight.buildMessage("TODO"));
+        ArenaManager arenaManager = surviveTheNight.getArenaManager();
+        Arena arena = arenaManager.getArena(player);
+
+        if(arena != null) {
+            if(!arena.removePlayer(player)) {
+                player.sendMessage(surviveTheNight.buildMessage("<prefix> &cAn error has occurred while removing you from the arena."));
+            }
+        } else {
+            player.sendMessage(surviveTheNight.buildMessage("<prefix> &cYou are not in an arena."));
+        }
     }
 }

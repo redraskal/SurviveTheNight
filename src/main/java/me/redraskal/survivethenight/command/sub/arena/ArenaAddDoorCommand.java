@@ -2,8 +2,14 @@ package me.redraskal.survivethenight.command.sub.arena;
 
 import me.redraskal.survivethenight.SurviveTheNight;
 import me.redraskal.survivethenight.command.SubCommand;
+import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import me.redraskal.survivethenight.utils.Cuboid;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Copyright (c) Redraskal 2017.
@@ -11,16 +17,16 @@ import org.bukkit.entity.Player;
  * Please do not copy the code below unless you
  * have permission to do so from me.
  */
-public class ArenaDeleteCommand extends SubCommand {
+public class ArenaAddDoorCommand extends SubCommand {
 
     @Override
     public String name() {
-        return "arena delete";
+        return "arena adddoor";
     }
 
     @Override
     public String permission() {
-        return "survive.arena.delete";
+        return "survive.arena.create";
     }
 
     @Override
@@ -30,8 +36,20 @@ public class ArenaDeleteCommand extends SubCommand {
         if(args.length > 2) {
             try {
                 int id = Integer.parseInt(args[2]);
-                if(arenaManager.deleteArena(id)) {
-                    player.sendMessage(surviveTheNight.buildMessage("<prefix> &aArena has been successfully deleted."));
+                if(arenaManager.getArenaMap().containsKey(id)) {
+                    Arena arena = arenaManager.getArenaMap().get(id);
+                    Cuboid region = surviveTheNight.getWandListener().getSelection(player.getUniqueId());
+
+                    if(region != null) {
+                        Map<Cuboid, Location> doors = new HashMap<>();
+                        if(arena.getDoors() != null) doors = arena.getDoors();
+                        doors.put(region, player.getLocation());
+                        arena.setDoors(doors);
+                        arenaManager.saveArena(id);
+                        player.sendMessage(surviveTheNight.buildMessage("<prefix> &aDoor has been saved."));
+                    } else {
+                        player.sendMessage(surviveTheNight.buildMessage("<prefix> &cPlease select 2 door blocks first with /" + label + " arena wand."));
+                    }
                 } else {
                     player.sendMessage(surviveTheNight.buildMessage("<prefix> &cThe specified arena does not exist."));
                 }

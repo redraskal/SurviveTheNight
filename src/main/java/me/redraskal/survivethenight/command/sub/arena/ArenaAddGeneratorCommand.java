@@ -2,8 +2,14 @@ package me.redraskal.survivethenight.command.sub.arena;
 
 import me.redraskal.survivethenight.SurviveTheNight;
 import me.redraskal.survivethenight.command.SubCommand;
+import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Copyright (c) Redraskal 2017.
@@ -11,16 +17,16 @@ import org.bukkit.entity.Player;
  * Please do not copy the code below unless you
  * have permission to do so from me.
  */
-public class ArenaDeleteCommand extends SubCommand {
+public class ArenaAddGeneratorCommand extends SubCommand {
 
     @Override
     public String name() {
-        return "arena delete";
+        return "arena addgenerator";
     }
 
     @Override
     public String permission() {
-        return "survive.arena.delete";
+        return "survive.arena.create";
     }
 
     @Override
@@ -30,8 +36,20 @@ public class ArenaDeleteCommand extends SubCommand {
         if(args.length > 2) {
             try {
                 int id = Integer.parseInt(args[2]);
-                if(arenaManager.deleteArena(id)) {
-                    player.sendMessage(surviveTheNight.buildMessage("<prefix> &aArena has been successfully deleted."));
+                if(arenaManager.getArenaMap().containsKey(id)) {
+                    Arena arena = arenaManager.getArenaMap().get(id);
+                    List<Block> generatorBlocks = new ArrayList<>();
+                    if(arena.getGenerators() != null) generatorBlocks = arena.getGenerators();
+
+                    Block generatorBlock = player.getTargetBlock((HashSet<Byte>) null, 5);
+                    if(generatorBlock != null) {
+                        generatorBlocks.add(generatorBlock);
+                        arena.setGenerators(generatorBlocks);
+                        arenaManager.saveArena(id);
+                        player.sendMessage(surviveTheNight.buildMessage("<prefix> &aGenerator block has been saved."));
+                    } else {
+                        player.sendMessage(surviveTheNight.buildMessage("<prefix> &cTarget block not found."));
+                    }
                 } else {
                     player.sendMessage(surviveTheNight.buildMessage("<prefix> &cThe specified arena does not exist."));
                 }

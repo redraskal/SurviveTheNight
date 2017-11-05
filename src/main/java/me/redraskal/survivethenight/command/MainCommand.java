@@ -2,9 +2,7 @@ package me.redraskal.survivethenight.command;
 
 import lombok.Getter;
 import me.redraskal.survivethenight.SurviveTheNight;
-import me.redraskal.survivethenight.command.sub.arena.ArenaCreateCommand;
-import me.redraskal.survivethenight.command.sub.arena.ArenaDeleteCommand;
-import me.redraskal.survivethenight.command.sub.arena.ArenaHelpCommand;
+import me.redraskal.survivethenight.command.sub.arena.*;
 import me.redraskal.survivethenight.command.sub.player.PlayerJoinCommand;
 import me.redraskal.survivethenight.command.sub.player.PlayerLeaveCommand;
 import org.bukkit.ChatColor;
@@ -37,6 +35,21 @@ public class MainCommand implements CommandExecutor {
         this.subCommands.add(new ArenaHelpCommand());
         this.subCommands.add(new ArenaCreateCommand());
         this.subCommands.add(new ArenaDeleteCommand());
+
+        this.subCommands.add(new ArenaSetLobbyCommand());
+        this.subCommands.add(new ArenaSetMainLobbyCommand());
+        this.subCommands.add(new ArenaAddSpawnCommand());
+
+        this.subCommands.add(new ArenaSetMinPlayersCommand());
+        this.subCommands.add(new ArenaSetMaxPlayersCommand());
+        this.subCommands.add(new ArenaSetGeneratorsNeededCommand());
+
+        this.subCommands.add(new ArenaAddGeneratorCommand());
+        this.subCommands.add(new ArenaWandCommand());
+        this.subCommands.add(new ArenaSetBoundsCommand());
+        this.subCommands.add(new ArenaAddDoorCommand());
+        this.subCommands.add(new ArenaAddAreaCommand());
+        this.subCommands.add(new ArenaAddGateCommand());
     }
 
     @Override

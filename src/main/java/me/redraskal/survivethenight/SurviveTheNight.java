@@ -2,6 +2,7 @@ package me.redraskal.survivethenight;
 
 import lombok.Getter;
 import me.redraskal.survivethenight.command.MainCommand;
+import me.redraskal.survivethenight.listener.WandListener;
 import me.redraskal.survivethenight.manager.ArenaManager;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -25,6 +26,7 @@ public class SurviveTheNight extends JavaPlugin {
     @Getter private YamlConfiguration arenaConfig;
 
     @Getter private ArenaManager arenaManager;
+    @Getter private WandListener wandListener;
 
     public void onEnable() {
         this.getDataFolder().mkdirs();
@@ -48,6 +50,9 @@ public class SurviveTheNight extends JavaPlugin {
         this.arenaConfig = YamlConfiguration.loadConfiguration(f_arenaConfig);
 
         this.arenaManager = new ArenaManager(this);
+        this.wandListener = new WandListener(this);
+
+        this.getServer().getPluginManager().registerEvents(wandListener, this);
 
         this.getCommand("survive").setExecutor(new MainCommand(this));
     }
