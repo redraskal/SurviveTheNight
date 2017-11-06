@@ -3,12 +3,16 @@ package me.redraskal.survivethenight.runnable;
 import lombok.Getter;
 import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.game.GameState;
+import me.redraskal.survivethenight.game.Generator;
 import me.redraskal.survivethenight.game.PlayerRole;
 import me.redraskal.survivethenight.utils.NMSUtils;
+import me.redraskal.survivethenight.utils.Sounds;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Copyright (c) Redraskal 2017.
@@ -20,12 +24,15 @@ public class GameRunnable extends BukkitRunnable {
 
     @Getter private final Arena arena;
     @Getter private final IronGolem ironGolem;
+    @Getter private final List<Generator> generators = new ArrayList<>();
 
     private int ticks = 0;
 
     public GameRunnable(Arena arena, IronGolem ironGolem) {
         this.arena = arena;
         this.ironGolem = ironGolem;
+        this.getArena().getGenerators().forEach(block -> generators.add(new Generator(block)));
+        this.runTaskTimer(this.getArena().getArenaManager().getSurviveTheNight(), 0, 1L);
     }
 
     @Override
@@ -37,7 +44,18 @@ public class GameRunnable extends BukkitRunnable {
 
         ticks++;
 
-        if(ticks == 0) {
+        if(ticks % 10 == 0) {
+            this.getGenerators().forEach(generator -> {
+                generator.getBlock().getWorld().playSound(generator.getBlock().getLocation(),
+                        Sounds.ZOMBIE_INFECT.spigot(), 0.6f, 0.79f);
+                if(generator.isRunning()) {
+                    generator.getBlock().getWorld().playSound(generator.getBlock().getLocation(),
+                            Sounds.MINECART_BASE.spigot(), 0.4f, 0.09f);
+                }
+            });
+        }
+
+        if(ticks == 1) {
             String message = this.getArena().getArenaManager().getSurviveTheNight()
                     .buildMessage("Find &f&lFuel Cans &fand carry them to &f&lGenerators");
             String message2 = this.getArena().getArenaManager().getSurviveTheNight()

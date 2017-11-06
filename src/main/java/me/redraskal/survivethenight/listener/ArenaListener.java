@@ -5,7 +5,9 @@ import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.game.GameState;
 import me.redraskal.survivethenight.game.PlayerRole;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import me.redraskal.survivethenight.utils.InventoryUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -81,6 +83,12 @@ public class ArenaListener implements Listener {
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
+        if(event.getEntity() instanceof IronGolem
+                && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
+            if(event.getEntity().hasMetadata("killer")) {
+                event.setCancelled(true);
+            }
+        }
         if(!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
         if(!this.getArena().getPlayers().contains(player)) return;
@@ -109,7 +117,13 @@ public class ArenaListener implements Listener {
                         if(this.getArena().getPlayerRoles().get(damager) == PlayerRole.SURVIVOR) {
                             event.setCancelled(true);
                         } else {
-                            //TODO: Check if player will die with this hit
+                            if((entity.getHealth()-event.getDamage()) <= 0D) {
+                                event.setDamage(0);
+                                InventoryUtils.resetPlayer(entity);
+                                entity.setGameMode(GameMode.SPECTATOR);
+
+                                //TODO: Player has died message
+                            }
                         }
                     }
                 }
@@ -121,8 +135,15 @@ public class ArenaListener implements Listener {
                         Player killer = Bukkit.getPlayer(UUID.fromString(event.getEntity()
                                 .getMetadata("killer").get(0).asString()));
                         if(killer != null) {
-                            //TODO: Check if player will die with this hit
-                            killer.damage(damage, damager);
+                            if((killer.getHealth()-event.getDamage()) <= 0D) {
+                                event.setDamage(0);
+                                InventoryUtils.resetPlayer(killer);
+                                killer.setGameMode(GameMode.SPECTATOR);
+
+                                //TODO: Killer has died message
+                            } else {
+                                killer.damage(damage, damager);
+                            }
                         }
                     }
                 } else {

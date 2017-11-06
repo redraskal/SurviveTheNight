@@ -10,15 +10,13 @@ import me.redraskal.survivethenight.runnable.GameStartRunnable;
 import me.redraskal.survivethenight.utils.Cuboid;
 import me.redraskal.survivethenight.utils.InventoryUtils;
 import me.redraskal.survivethenight.utils.NMSUtils;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Copyright (c) Redraskal 2017.
@@ -77,6 +75,15 @@ public class Arena {
         }
 
         this.getPlayers().add(player);
+
+        if(this.getGameState() != GameState.LOBBY) {
+            player.teleport(this.getSpawnPositions().get(new Random().nextInt(this.getSpawnPositions().size())));
+            InventoryUtils.resetPlayer(player);
+            player.setGameMode(GameMode.SPECTATOR);
+            this.getPlayerRoles().put(player, PlayerRole.SURVIVOR);
+            return true;
+        }
+
         player.teleport(this.getLobbyPosition());
         InventoryUtils.resetPlayer(player);
         this.getPlayerRoles().put(player, PlayerRole.SURVIVOR);
@@ -176,6 +183,13 @@ public class Arena {
             }
             if(this.getGameState() != GameState.LOBBY) {
                 this.setGameState(GameState.LOBBY);
+                if(this.getGameRunnable() != null) {
+                    this.getGameRunnable().getGenerators().forEach(generator -> {
+                        generator.getArmorStand().remove();
+                        generator.getArmorStand2().remove();
+                    });
+                    this.setGameRunnable(null);
+                }
                 //TODO: Reset state
             }
         }

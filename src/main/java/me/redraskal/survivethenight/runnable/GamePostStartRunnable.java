@@ -7,6 +7,7 @@ import me.redraskal.survivethenight.game.PlayerRole;
 import me.redraskal.survivethenight.utils.LocationUtils;
 import me.redraskal.survivethenight.utils.NBTUtils;
 import me.redraskal.survivethenight.utils.NMSUtils;
+import me.redraskal.survivethenight.utils.Sounds;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -20,6 +21,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -46,6 +48,7 @@ public class GamePostStartRunnable extends BukkitRunnable {
         this.getArena().getBounds().getWorld().setStorm(false);
         arena.getPlayerRoles().put(arena.getPlayers()
                 .get(new Random().nextInt(arena.getPlayers().size())), PlayerRole.KILLER);
+        Collections.shuffle(arena.getSpawnPositions());
 
         int currentSpawnpoint = -1;
 
@@ -57,9 +60,6 @@ public class GamePostStartRunnable extends BukkitRunnable {
             player.teleport(spawnpoint);
 
             if(arena.getPlayerRoles().get(player) == PlayerRole.SURVIVOR) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 0, false, false), true);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, Integer.MAX_VALUE, 0, false, false), true);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, false, false), true);
                 player.setHealthScale(4D);
                 player.setFoodLevel(0);
 
@@ -69,9 +69,6 @@ public class GamePostStartRunnable extends BukkitRunnable {
                 npc.faceLocation(arena.getSpawnPositions().get(currentSpawnpoint).clone().subtract(3D, 0, 0));
                 npcMap.put(player, npc);
             } else {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false), true);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 0, false, false), true);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, Integer.MAX_VALUE, 0, false, false), true);
                 player.setHealthScale(2D);
                 player.setFoodLevel(7);
 
@@ -98,6 +95,8 @@ public class GamePostStartRunnable extends BukkitRunnable {
             armorStand.setBasePlate(false);
             armorStand.setGravity(false);
             armorStand.setSmall(true);
+
+            player.playSound(player.getLocation(), Sounds.AMBIENCE_CAVE.spigot(), 1.6f, 0.49f);
 
             player.setGameMode(GameMode.SPECTATOR);
             try {
@@ -133,8 +132,17 @@ public class GamePostStartRunnable extends BukkitRunnable {
                         entry.getKey().teleport(npcMap.get(entry.getKey()).getStoredLocation());
                         npcMap.get(entry.getKey()).despawn();
                         npcMap.remove(entry.getKey());
+
+                        entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 0, false, false), true);
+                        entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.POISON, Integer.MAX_VALUE, 0, false, false), true);
+                        entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, false, false), true);
                     } else {
                         entry.getKey().teleport(ironGolem.getLocation());
+
+                        entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false), true);
+                        entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 0, false, false), true);
+                        entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.WITHER, Integer.MAX_VALUE, 0, false, false), true);
+
                         try {
                             NMSUtils.removeEntityClientSide(entry.getKey(), ironGolem);
                         } catch (NoSuchMethodException e) {

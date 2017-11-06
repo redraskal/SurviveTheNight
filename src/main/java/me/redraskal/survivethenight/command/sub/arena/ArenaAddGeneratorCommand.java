@@ -4,11 +4,11 @@ import me.redraskal.survivethenight.SurviveTheNight;
 import me.redraskal.survivethenight.command.SubCommand;
 import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import me.redraskal.survivethenight.utils.LocationUtils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -41,7 +41,7 @@ public class ArenaAddGeneratorCommand extends SubCommand {
                     List<Block> generatorBlocks = new ArrayList<>();
                     if(arena.getGenerators() != null) generatorBlocks = arena.getGenerators();
 
-                    Block generatorBlock = player.getTargetBlock((HashSet<Byte>) null, 5);
+                    Block generatorBlock = LocationUtils.getTargetBlock(player, 6);
                     if(generatorBlock != null) {
                         generatorBlocks.add(generatorBlock);
                         arena.setGenerators(generatorBlocks);

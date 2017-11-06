@@ -1,7 +1,11 @@
 package me.redraskal.survivethenight.utils;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 /**
@@ -39,5 +43,16 @@ public class LocationUtils {
         direction.multiply(-1);
         location.setDirection(direction);
         return location;
+    }
+
+    public static Block getTargetBlock(LivingEntity entity, int range) {
+        final BlockIterator bit = new BlockIterator(entity, range);
+        while(bit.hasNext()) {
+            final Block next = bit.next();
+            if(next != null && next.getType() != Material.AIR) {
+                return next;
+            }
+        }
+        return null;
     }
 }
