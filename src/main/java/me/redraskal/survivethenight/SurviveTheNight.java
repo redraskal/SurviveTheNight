@@ -6,6 +6,8 @@ import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.listener.WandListener;
 import me.redraskal.survivethenight.manager.ArenaManager;
 import me.redraskal.survivethenight.manager.BossBarManager;
+import me.redraskal.survivethenight.manager.CustomItemManager;
+import me.redraskal.survivethenight.manager.SignManager;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import org.bukkit.Bukkit;
@@ -30,14 +32,20 @@ public class SurviveTheNight extends JavaPlugin {
     private File f_arenaConfig;
     @Getter private YamlConfiguration arenaConfig;
 
+    private File f_signConfig;
+    @Getter private YamlConfiguration signConfig;
+
     @Getter private BossBarManager bossBarManager;
     @Getter private ArenaManager arenaManager;
+    @Getter private CustomItemManager customItemManager;
+    @Getter private SignManager signManager;
     @Getter private WandListener wandListener;
 
     @Getter private NPCRegistry registry;
 
     public void onEnable() {
         this.getDataFolder().mkdirs();
+        this.saveDefaultConfig();
 
         this.f_messageConfig = new File(this.getDataFolder(), "messages.yml");
         if(!f_messageConfig.exists()) {
@@ -57,6 +65,18 @@ public class SurviveTheNight extends JavaPlugin {
         }
         this.arenaConfig = YamlConfiguration.loadConfiguration(f_arenaConfig);
 
+        this.f_signConfig = new File(this.getDataFolder(), "signs.yml");
+        if(!f_signConfig.exists()) {
+            try {
+                f_signConfig.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                this.getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+        }
+        this.signConfig = YamlConfiguration.loadConfiguration(f_signConfig);
+
         this.registry = CitizensAPI.getNPCRegistry();
 
         try {
@@ -67,6 +87,8 @@ public class SurviveTheNight extends JavaPlugin {
             return;
         }
         this.arenaManager = new ArenaManager(this);
+        this.customItemManager = new CustomItemManager(this);
+        this.signManager = new SignManager(this);
         this.wandListener = new WandListener(this);
 
         this.getServer().getPluginManager().registerEvents(wandListener, this);
@@ -97,6 +119,14 @@ public class SurviveTheNight extends JavaPlugin {
     public void saveArenaConfig() {
         try {
             this.getArenaConfig().save(this.f_arenaConfig);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveSignConfig() {
+        try {
+            this.getSignConfig().save(this.f_signConfig);
         } catch (IOException e) {
             e.printStackTrace();
         }

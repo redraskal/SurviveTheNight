@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Copyright (c) Redraskal 2017.
@@ -38,6 +42,73 @@ public class NMSUtils {
                 .newInstance(new int[]{entity.getEntityId()});
 
         sendPacket(player, packetPlayOutEntityDestroy);
+    }
+
+    public static void forceChestState(Block block, boolean open) throws ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException, InstantiationException {
+        Location location = block.getLocation().clone();
+
+        Class<?> c_world = Class.forName(fetchNMSClass("World"));
+        Class<?> c_block = Class.forName(fetchNMSClass("Block"));
+        Class<?> c_blockPosition = Class.forName(fetchNMSClass("BlockPosition"));
+        Class<?> c_tileEntity = Class.forName(fetchNMSClass("TileEntity"));
+        Class<?> c_tileEntityChest = Class.forName(fetchNMSClass("TileEntityChest"));
+        Class<?> c_tileEntityEnderChest = Class.forName(fetchNMSClass("TileEntityEnderChest"));
+        Class<?> c_craftWorld = Class.forName(NMSUtils.fetchBukkitClass("CraftWorld"));
+
+        Method c_getHandle = c_craftWorld.getDeclaredMethod("getHandle");
+        Method c_getTileEntity = c_world.getDeclaredMethod("getTileEntity", c_blockPosition);
+        Method c_playBlockAction = c_world.getDeclaredMethod("playBlockAction", c_blockPosition,
+                c_block, int.class, int.class);
+        Method c_w = c_tileEntity.getDeclaredMethod("w");
+
+        Object craftWorld = c_craftWorld.cast(location.getWorld());
+        Object worldServer = c_getHandle.invoke(craftWorld);
+        Object blockPosition = c_blockPosition.getConstructor(
+                double.class, double.class, double.class)
+                .newInstance(location.getX(), location.getY(), location.getZ());
+
+        if(block.getType() == Material.CHEST) {
+            Object tileEntityChest = c_tileEntityChest.cast(c_getTileEntity
+                    .invoke(worldServer, blockPosition));
+            c_playBlockAction.invoke(worldServer, blockPosition,
+                    c_w.invoke(tileEntityChest), 1, open ? 1 : 0);
+        } else {
+            Object tileEntityEnderChest = c_tileEntityEnderChest.cast(c_getTileEntity
+                    .invoke(worldServer, blockPosition));
+            c_playBlockAction.invoke(worldServer, blockPosition,
+                    c_w.invoke(tileEntityEnderChest), 1, open ? 1 : 0);
+        }
+    }
+
+    public static void playSoundEffect(Location location, String soundEffect, float volume, float pitch) throws ClassNotFoundException,
+            NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+            InstantiationException, NoSuchFieldException {
+        Class<?> c_packetPlayOutNamedSoundEffect = Class.forName(fetchNMSClass("PacketPlayOutNamedSoundEffect"));
+
+        Object packetPlayOutNamedSoundEffect = c_packetPlayOutNamedSoundEffect.getConstructor(
+                String.class, double.class, double.class, double.class, float.class, float.class)
+                .newInstance(soundEffect, location.getX(), location.getY(), location.getZ(), volume, pitch);
+
+        location.getWorld().getNearbyEntities(location, 30, 30, 30).forEach(entity -> {
+            if(entity instanceof Player) {
+                try {
+                    sendPacket((Player) entity, packetPlayOutNamedSoundEffect);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public static void sendTitle(Player player, String title, TitleType titleType, int fadeInTime, int showTime, int fadeOutTime)

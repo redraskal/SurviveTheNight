@@ -3,13 +3,14 @@ package me.redraskal.survivethenight.utils;
 /**
  * Resource from https://github.com/JBoss925/CuboidsAPI/blob/master/src/me/JBoss925/cuboids/Cuboid.java
  */
+
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 
 import java.util.*;
 
@@ -57,8 +58,8 @@ public class Cuboid implements Iterable<Block> {
         return new CuboidIterator(new Cuboid(xmax, xmin, ymax, ymin, zmax, zmin, world));
     }
 
-    public boolean hasPlayerInside(Player player) {
-        Location loc = player.getLocation();
+    public boolean hasEntityInside(Entity entity) {
+        Location loc = entity.getLocation();
         if(xmin <= loc.getX() && xmax >= loc.getX() && ymin <= loc.getY() && ymax >= loc.getY() && zmin <= loc.getZ() && zmax >= loc.getX() && world.getName().equals(loc.getWorld().getName())){
             return true;
         }

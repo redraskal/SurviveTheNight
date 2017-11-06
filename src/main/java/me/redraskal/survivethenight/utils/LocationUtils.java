@@ -3,7 +3,6 @@ package me.redraskal.survivethenight.utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
@@ -16,26 +15,10 @@ import org.bukkit.util.Vector;
  */
 public class LocationUtils {
 
-    public static Location center(Location location) {
-        String x = "" + location.getX();
-        String z = "" + location.getZ();
-        if(x.contains(".")) x = x.substring(0, x.indexOf("."));
-        if(z.contains(".")) z = z.substring(0, z.indexOf("."));
-        x+=".5";
-        z+=".5";
-        location.setX(Double.parseDouble(x));
-        location.setZ(Double.parseDouble(z));
-        return resetRotation(location);
-    }
-
-    public static Location resetRotation(Location location) {
-        location.setYaw(0f);
-        location.setPitch(0f);
-        return location;
-    }
-
-    public static Location faceEntity(Location location, Entity entity) {
-        return faceLocation(location, entity.getLocation());
+    public static boolean isSameLocation(Location location, Location comparing) {
+        return (location.getBlockX() == comparing.getBlockX()
+                && location.getBlockY() == comparing.getBlockY()
+                && location.getBlockZ() == comparing.getBlockZ());
     }
 
     public static Location faceLocation(Location location, Location facing) {

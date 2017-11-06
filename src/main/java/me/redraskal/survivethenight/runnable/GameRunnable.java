@@ -31,7 +31,8 @@ public class GameRunnable extends BukkitRunnable {
     public GameRunnable(Arena arena, IronGolem ironGolem) {
         this.arena = arena;
         this.ironGolem = ironGolem;
-        this.getArena().getGenerators().forEach(block -> generators.add(new Generator(block)));
+        this.getArena().getGenerators().forEach(block -> generators.add(
+                new Generator(this.getArena().getArenaManager().getSurviveTheNight(), block)));
         this.runTaskTimer(this.getArena().getArenaManager().getSurviveTheNight(), 0, 1L);
     }
 

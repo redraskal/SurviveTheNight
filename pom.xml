@@ -41,6 +41,13 @@
             <version>2.0.22-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <!--Mojang API-->
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>authlib</artifactId>
+            <version>1.5.13</version>
+            <scope>provided</scope>
+        </dependency>
         <!--Fun other stuff-->
         <dependency>
             <groupId>org.projectlombok</groupId>

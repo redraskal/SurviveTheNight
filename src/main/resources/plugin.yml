@@ -18,6 +18,7 @@ permissions:
     children:
       survive.player.*: true
       survive.arena.*: true
+      survive.sign.*: true
     default: op
   survive.player.*:
     children:
@@ -42,4 +43,13 @@ permissions:
   survive.arena.create:
     default: op
   survive.arena.delete:
+    default: op
+  survive.sign.*:
+    children:
+      survive.sign.create: true
+      survive.sign.delete: true
+    default: op
+  survive.sign.create:
+    default: op
+  survive.sign.delete:
     default: op

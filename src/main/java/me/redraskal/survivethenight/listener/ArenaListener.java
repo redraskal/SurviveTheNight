@@ -5,22 +5,27 @@ import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.game.GameState;
 import me.redraskal.survivethenight.game.PlayerRole;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import me.redraskal.survivethenight.runnable.ChestRefillRunnable;
 import me.redraskal.survivethenight.utils.InventoryUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
+import me.redraskal.survivethenight.utils.NMSUtils;
+import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.util.Vector;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -64,6 +69,98 @@ public class ArenaListener implements Listener {
     }
 
     @EventHandler
+    public void onItemDrop(PlayerDropItemEvent event) {
+        if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
+        if(this.getArena().getGameState() != GameState.INGAME) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onItemPickup(PlayerPickupItemEvent event) {
+        if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
+        if(this.getArena().getGameState() != GameState.INGAME) return;
+        event.getPlayer().getInventory().forEach(itemStack -> {
+            if(this.getArenaManager().getSurviveTheNight().getCustomItemManager()
+                    .isSameItem(itemStack, event.getItem().getItemStack())) {
+                event.setCancelled(true);
+                return;
+            }
+        });
+    }
+
+    @EventHandler
+    public void onArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
+        if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
+        if(event.getAction().toString().contains("BLOCK")) {
+            event.setCancelled(true);
+            if(this.getArena().getGameRunnable() != null) {
+                if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    if(event.getClickedBlock().getType() == Material.CHEST) {
+                        if(!event.getClickedBlock().hasMetadata("chest-refilling")) {
+                            try {
+                                NMSUtils.forceChestState(event.getClickedBlock(), true);
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                            } catch (NoSuchMethodException e) {
+                                e.printStackTrace();
+                            } catch (InvocationTargetException e) {
+                                e.printStackTrace();
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            } catch (InstantiationException e) {
+                                e.printStackTrace();
+                            }
+
+                            new ChestRefillRunnable(this.getArena(), event.getClickedBlock());
+                            event.getClickedBlock().getWorld().playSound(event.getClickedBlock().getLocation(),
+                                    Sound.ZOMBIE_REMEDY, 0.5f, 0.79f);
+                            event.getClickedBlock().getWorld().spigot().playEffect(event.getClickedBlock().getLocation(),
+                                    Effect.CLOUD, 0, 0, 1, 1, 1, 0,
+                                    15, 16);
+
+                            Item item = event.getClickedBlock().getWorld().dropItem(
+                                    event.getClickedBlock().getRelative(BlockFace.UP).getLocation(),
+                                    this.getArenaManager().getSurviveTheNight().getCustomItemManager().getFuelCanItemStack());
+                            item.setPickupDelay(20);
+                            item.setVelocity(new Vector(0.0D, 0.25D, 0.0D));
+
+                            Item item2 = event.getClickedBlock().getWorld().dropItem(
+                                    event.getClickedBlock().getRelative(BlockFace.UP).getLocation(),
+                                    this.getArenaManager().getSurviveTheNight().getCustomItemManager().getBandageItemStack());
+                            item2.setPickupDelay(20);
+                            item2.setVelocity(new Vector(0.0D, 0.25D, 0.0D));
+
+                            if(new Random().nextBoolean()) {
+                                Item item3 = event.getClickedBlock().getWorld().dropItem(
+                                        event.getClickedBlock().getRelative(BlockFace.UP).getLocation(),
+                                        this.getArenaManager().getSurviveTheNight().getCustomItemManager().getLightItemStack());
+                                item3.setPickupDelay(20);
+                                item3.setVelocity(new Vector(0.0D, 0.25D, 0.0D));
+                            }
+                        }
+
+                        return;
+                    }
+
+                    this.getArena().getGameRunnable().getGenerators().forEach(generator -> {
+                        if(generator.getBlock().getLocation()
+                                .equals(event.getClickedBlock().getLocation())) {
+                            generator.fill(event.getPlayer());
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
         event.setCancelled(true);
@@ -79,6 +176,30 @@ public class ArenaListener implements Listener {
     public void onFoodLevelChange(FoodLevelChangeEvent event) {
         if(!this.getArena().getPlayers().contains((Player) event.getEntity())) return;
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
+        if(this.getArena().getGameRunnable() == null) return;
+        if(this.getArena().getPlayerRoles().get(event.getPlayer()) == PlayerRole.KILLER) {
+            try {
+                NMSUtils.removeEntityClientSide(event.getPlayer(),
+                        this.getArena().getGameRunnable().getIronGolem());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @EventHandler

@@ -2,6 +2,9 @@ package me.redraskal.survivethenight.game;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.redraskal.survivethenight.event.ArenaEndGameEvent;
+import me.redraskal.survivethenight.event.ArenaPlayerJoinEvent;
+import me.redraskal.survivethenight.event.ArenaPlayerQuitEvent;
 import me.redraskal.survivethenight.listener.ArenaListener;
 import me.redraskal.survivethenight.manager.ArenaManager;
 import me.redraskal.survivethenight.runnable.GamePostStartRunnable;
@@ -87,6 +90,8 @@ public class Arena {
         player.teleport(this.getLobbyPosition());
         InventoryUtils.resetPlayer(player);
         this.getPlayerRoles().put(player, PlayerRole.SURVIVOR);
+        this.getArenaManager().getSurviveTheNight().getServer()
+                .getPluginManager().callEvent(new ArenaPlayerJoinEvent(this, player));
         this.broadcastMessage(this.getArenaManager().getSurviveTheNight().buildMessage("&9" + player.getName() + " &6wants to survive!"));
 
         try {
@@ -157,6 +162,8 @@ public class Arena {
         }
         player.teleport(this.getMainLobbyPosition());
         InventoryUtils.resetPlayer(player);
+        this.getArenaManager().getSurviveTheNight().getServer()
+                .getPluginManager().callEvent(new ArenaPlayerQuitEvent(this, player));
 
         try {
             this.getArenaManager().getSurviveTheNight().getBossBarManager().removeBar(player);
@@ -183,14 +190,20 @@ public class Arena {
             }
             if(this.getGameState() != GameState.LOBBY) {
                 this.setGameState(GameState.LOBBY);
+                this.getArenaManager().getSurviveTheNight().getServer()
+                        .getPluginManager().callEvent(new ArenaEndGameEvent(this));
                 if(this.getGameRunnable() != null) {
                     this.getGameRunnable().getGenerators().forEach(generator -> {
-                        generator.getArmorStand().remove();
-                        generator.getArmorStand2().remove();
+                        if(!generator.getArmorStand().isDead()) generator.getArmorStand().remove();
+                        if(!generator.getArmorStand2().isDead()) generator.getArmorStand2().remove();
+                    });
+                    this.getBounds().getWorld().getEntities().forEach(entity -> {
+                        if(this.getBounds().hasEntityInside(entity) && !(entity instanceof Player)) {
+                            entity.remove();
+                        }
                     });
                     this.setGameRunnable(null);
                 }
-                //TODO: Reset state
             }
         }
 

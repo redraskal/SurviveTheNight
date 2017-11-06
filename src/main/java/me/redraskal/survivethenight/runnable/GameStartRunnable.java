@@ -2,6 +2,7 @@ package me.redraskal.survivethenight.runnable;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.redraskal.survivethenight.event.ArenaStartGameEvent;
 import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.game.GameState;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -31,6 +32,8 @@ public class GameStartRunnable extends BukkitRunnable {
                     .buildMessage("<prefix> &e&lThe game is starting! &7You will be teleported in a few seconds..."));
             this.getArena().setGamePostStartRunnable(new GamePostStartRunnable(this.getArena()));
             this.getArena().setGameStartRunnable(null);
+            this.getArena().getArenaManager().getSurviveTheNight().getServer().getPluginManager()
+                    .callEvent(new ArenaStartGameEvent(this.getArena()));
         }
         countdown--;
         this.getArena().getPlayers().forEach(player -> player.setLevel(countdown));

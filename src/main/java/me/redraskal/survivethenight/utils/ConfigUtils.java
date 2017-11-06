@@ -58,7 +58,7 @@ public class ConfigUtils {
     public static List<String> encodeBlockList(List<Block> object) {
         List<String> result = new ArrayList<>();
 
-        object.forEach(block -> result.add(encodeLocation(LocationUtils.center(block.getLocation()))));
+        object.forEach(block -> result.add(encodeLocation(block.getLocation())));
 
         return result;
     }
