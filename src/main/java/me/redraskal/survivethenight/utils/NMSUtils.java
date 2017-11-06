@@ -111,6 +111,21 @@ public class NMSUtils {
         });
     }
 
+    public static void sendActionBar(Player player, String text) throws ClassNotFoundException, NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException,
+            InstantiationException, NoSuchFieldException {
+        Class<?> c_iChatBaseComponent = Class.forName(fetchNMSClass("IChatBaseComponent"));
+        Class<?> c_chatSerializer = Class.forName(fetchNMSClass("IChatBaseComponent$ChatSerializer"));
+        Class<?> c_packetPlayOutChat = Class.forName(fetchNMSClass("PacketPlayOutChat"));
+
+        Object chatBaseComponent = c_chatSerializer.getDeclaredMethod("a", String.class).invoke(null,
+                "{\"text\":\"" + ChatColor.translateAlternateColorCodes('&', text) + "\"}");
+        Object packetPlayOutChat = c_packetPlayOutChat.getConstructor(c_iChatBaseComponent, byte.class)
+                .newInstance(chatBaseComponent, (byte) 2);
+
+        sendPacket(player, packetPlayOutChat);
+    }
+
     public static void sendTitle(Player player, String title, TitleType titleType, int fadeInTime, int showTime, int fadeOutTime)
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
                 InstantiationException, NoSuchFieldException {

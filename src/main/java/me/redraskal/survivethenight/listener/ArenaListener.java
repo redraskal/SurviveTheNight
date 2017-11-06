@@ -6,6 +6,7 @@ import me.redraskal.survivethenight.game.GameState;
 import me.redraskal.survivethenight.game.PlayerRole;
 import me.redraskal.survivethenight.manager.ArenaManager;
 import me.redraskal.survivethenight.runnable.ChestRefillRunnable;
+import me.redraskal.survivethenight.utils.Cuboid;
 import me.redraskal.survivethenight.utils.InventoryUtils;
 import me.redraskal.survivethenight.utils.NMSUtils;
 import org.bukkit.*;
@@ -14,6 +15,7 @@ import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -25,6 +27,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -65,6 +68,38 @@ public class ArenaListener implements Listener {
         if(this.getArena().getPlayerRoles().get(event.getPlayer()) == PlayerRole.KILLER) {
             if(this.getArena().getGameRunnable().getIronGolem().isDead()) return;
             this.getArena().getGameRunnable().getIronGolem().teleport(event.getTo());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerMoveLowPriority(PlayerMoveEvent event) {
+        if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
+        if(this.getArena().getGameRunnable() == null) return;
+        String areaName = "";
+
+        for(Map.Entry<String, Cuboid> entry : this.getArena().getAreas().entrySet()) {
+            if(entry.getValue().hasBlockInside(event.getTo().getBlock())) {
+                areaName = entry.getKey();
+                break;
+            }
+        }
+
+        if(!areaName.isEmpty()) {
+            try {
+                NMSUtils.sendActionBar(event.getPlayer(), areaName);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         }
     }
 
