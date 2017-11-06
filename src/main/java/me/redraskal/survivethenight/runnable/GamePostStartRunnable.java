@@ -4,10 +4,7 @@ import lombok.Getter;
 import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.game.GameState;
 import me.redraskal.survivethenight.game.PlayerRole;
-import me.redraskal.survivethenight.utils.LocationUtils;
-import me.redraskal.survivethenight.utils.NBTUtils;
-import me.redraskal.survivethenight.utils.NMSUtils;
-import me.redraskal.survivethenight.utils.Sounds;
+import me.redraskal.survivethenight.utils.*;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -58,6 +55,30 @@ public class GamePostStartRunnable extends BukkitRunnable {
             final Location spawnpoint = LocationUtils.faceLocation(arena.getSpawnPositions().get(currentSpawnpoint).clone().add(10D, 1D, 0),
                     arena.getSpawnPositions().get(currentSpawnpoint));
             player.teleport(spawnpoint);
+
+            SimpleScoreboard scoreboard = this.getArena().getScoreboardMap().get(player);
+
+            if(scoreboard != null) {
+                scoreboard.reset();
+
+                scoreboard.setTitle(this.getArena().getArenaManager().getSurviveTheNight()
+                        .buildMessage("&9Sur&dv&ci&6v&ee &8» &700:00"));
+
+                scoreboard.add("&4", 12);
+                scoreboard.add("&f&lGenerators", 11);
+                scoreboard.add("&8▍▍▍▍▍▍&d&l⏐&8▍▍▍", 10);
+                scoreboard.add("&3", 9);
+                scoreboard.add("&f&lExit Gates", 8);
+                scoreboard.add("&cClosed", 7);
+                scoreboard.add("&2", 6);
+                scoreboard.add("&f" + this.getArena().getGeneratorsNeeded() + " Generators until", 5);
+                scoreboard.add("&fthe exit gates open", 4);
+                scoreboard.add("&1", 3);
+                scoreboard.add("&8------------", 2);
+                scoreboard.add("&6play.&eHiveMC&6.com", 1);
+
+                scoreboard.update();
+            }
 
             if(arena.getPlayerRoles().get(player) == PlayerRole.SURVIVOR) {
                 player.setHealthScale(4D);

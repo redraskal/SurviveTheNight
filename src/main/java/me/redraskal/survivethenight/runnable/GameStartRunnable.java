@@ -7,6 +7,8 @@ import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.game.GameState;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Copyright (c) Redraskal 2017.
  * <p>
@@ -30,6 +32,24 @@ public class GameStartRunnable extends BukkitRunnable {
             this.getArena().setGameState(GameState.INGAME);
             this.getArena().broadcastMessage(this.getArena().getArenaManager().getSurviveTheNight()
                     .buildMessage("<prefix> &e&lThe game is starting! &7You will be teleported in a few seconds..."));
+            this.getArena().getPlayers().forEach(player -> {
+                try {
+                    this.getArena().getArenaManager()
+                            .getSurviveTheNight().getBossBarManager().removeBar(player);
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            });
             this.getArena().setGamePostStartRunnable(new GamePostStartRunnable(this.getArena()));
             this.getArena().setGameStartRunnable(null);
             this.getArena().getArenaManager().getSurviveTheNight().getServer().getPluginManager()

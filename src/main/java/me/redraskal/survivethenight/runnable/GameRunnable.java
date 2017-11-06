@@ -1,18 +1,18 @@
 package me.redraskal.survivethenight.runnable;
 
 import lombok.Getter;
-import me.redraskal.survivethenight.game.Arena;
-import me.redraskal.survivethenight.game.GameState;
-import me.redraskal.survivethenight.game.Generator;
-import me.redraskal.survivethenight.game.PlayerRole;
+import me.redraskal.survivethenight.game.*;
+import me.redraskal.survivethenight.utils.Cuboid;
 import me.redraskal.survivethenight.utils.NMSUtils;
 import me.redraskal.survivethenight.utils.Sounds;
+import org.bukkit.Location;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Copyright (c) Redraskal 2017.
@@ -25,6 +25,7 @@ public class GameRunnable extends BukkitRunnable {
     @Getter private final Arena arena;
     @Getter private final IronGolem ironGolem;
     @Getter private final List<Generator> generators = new ArrayList<>();
+    @Getter private final List<Closet> closets = new ArrayList<>();
 
     private int ticks = 0;
 
@@ -32,8 +33,21 @@ public class GameRunnable extends BukkitRunnable {
         this.arena = arena;
         this.ironGolem = ironGolem;
         this.getArena().getGenerators().forEach(block -> generators.add(
-                new Generator(this.getArena().getArenaManager().getSurviveTheNight(), block)));
+                new Generator(this.getArena().getArenaManager().getSurviveTheNight(), this.getArena(), block)));
+        for(Map.Entry<Cuboid, Location> entry : this.getArena().getDoors().entrySet()) {
+            closets.add(new Closet(this.getArena(), entry.getValue(), entry.getKey()));
+        }
         this.runTaskTimer(this.getArena().getArenaManager().getSurviveTheNight(), 0, 1L);
+    }
+
+    public int getGeneratorsFilled() {
+        int filled = 0;
+
+        for(Generator generator : this.getGenerators()) {
+            if(generator.isRunning()) filled++;
+        }
+
+        return filled;
     }
 
     @Override
@@ -52,6 +66,29 @@ public class GameRunnable extends BukkitRunnable {
                 if(generator.isRunning()) {
                     generator.getBlock().getWorld().playSound(generator.getBlock().getLocation(),
                             Sounds.MINECART_BASE.spigot(), 0.4f, 0.09f);
+                }
+            });
+        }
+
+        if(ticks % 20 == 0) {
+            this.getArena().getPlayers().forEach(player -> {
+                try {
+                    this.getArena().getArenaManager().getSurviveTheNight()
+                            .getBossBarManager().sendBossBar(player, "7:00 PM &8⏐ &e"
+                            + this.getGeneratorsFilled() + "&7/&e"
+                            + this.getArena().getGeneratorsNeeded() + " &fGenerators powered");
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             });
         }

@@ -2,6 +2,7 @@ package me.redraskal.survivethenight.listener;
 
 import lombok.Getter;
 import me.redraskal.survivethenight.game.Arena;
+import me.redraskal.survivethenight.game.Closet;
 import me.redraskal.survivethenight.game.GameState;
 import me.redraskal.survivethenight.game.PlayerRole;
 import me.redraskal.survivethenight.manager.ArenaManager;
@@ -182,6 +183,13 @@ public class ArenaListener implements Listener {
                         }
 
                         return;
+                    }
+
+                    for(Closet closet : this.getArena().getGameRunnable().getClosets()) {
+                        if(closet.getDoorBounds().hasBlockInside(event.getClickedBlock())) {
+                            closet.hide(event.getPlayer());
+                            return;
+                        }
                     }
 
                     this.getArena().getGameRunnable().getGenerators().forEach(generator -> {

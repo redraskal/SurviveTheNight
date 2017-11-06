@@ -13,6 +13,8 @@ import me.redraskal.survivethenight.runnable.GameStartRunnable;
 import me.redraskal.survivethenight.utils.Cuboid;
 import me.redraskal.survivethenight.utils.InventoryUtils;
 import me.redraskal.survivethenight.utils.NMSUtils;
+import me.redraskal.survivethenight.utils.SimpleScoreboard;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -35,6 +37,7 @@ public class Arena {
     @Getter private ArenaListener arenaListener;
     @Getter @Setter private GameState gameState = GameState.LOBBY;
     @Getter private List<Player> players = new ArrayList<>();
+    @Getter private Map<Player, SimpleScoreboard> scoreboardMap = new HashMap<>();
     @Getter private Map<Player, PlayerRole> playerRoles = new HashMap<>();
 
     @Getter @Setter private GameStartRunnable gameStartRunnable;
@@ -81,21 +84,37 @@ public class Arena {
 
         if(this.getGameState() != GameState.LOBBY) {
             player.teleport(this.getSpawnPositions().get(new Random().nextInt(this.getSpawnPositions().size())));
-            InventoryUtils.resetPlayer(player);
             player.setGameMode(GameMode.SPECTATOR);
-            this.getPlayerRoles().put(player, PlayerRole.SURVIVOR);
-            return true;
+        } else {
+            player.teleport(this.getLobbyPosition());
         }
 
-        player.teleport(this.getLobbyPosition());
         InventoryUtils.resetPlayer(player);
         this.getPlayerRoles().put(player, PlayerRole.SURVIVOR);
         this.getArenaManager().getSurviveTheNight().getServer()
                 .getPluginManager().callEvent(new ArenaPlayerJoinEvent(this, player));
-        this.broadcastMessage(this.getArenaManager().getSurviveTheNight().buildMessage("&9" + player.getName() + " &6wants to survive!"));
+        if(this.getGameState() == GameState.LOBBY) this.broadcastMessage(this.getArenaManager().getSurviveTheNight()
+                .buildMessage("&9" + player.getName() + " &6wants to survive!"));
+
+        SimpleScoreboard scoreboard = new SimpleScoreboard("&eYour SURV Stats");
+
+        scoreboard.add("&bPoints", 0);
+        scoreboard.add("&bCrates Looted", 0);
+        scoreboard.add("&bGenerators Powered", 0);
+        scoreboard.add("&bKills", 0);
+        scoreboard.add("&bGames Played", 1);
+        scoreboard.add("&bVictories", 0);
+        scoreboard.add("&bDeaths", 0);
+
+        scoreboard.send(player);
+        scoreboard.update();
+        this.getScoreboardMap().put(player, scoreboard);
+
+        if(this.getGameState() != GameState.LOBBY) return true;
 
         try {
-            this.getArenaManager().getSurviveTheNight().getBossBarManager().sendBossBar(player, "&bPlaying &7» &e&lSurvive The Night");
+            this.getArenaManager().getSurviveTheNight().getBossBarManager().sendBossBar(player,
+                    "&bPlaying &7» &e&lSurvive The Night");
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -160,6 +179,13 @@ public class Arena {
             }
             this.getPlayerRoles().remove(player);
         }
+
+        if(this.getScoreboardMap().containsKey(player)) {
+            this.getScoreboardMap().get(player).reset();
+            this.getScoreboardMap().remove(player);
+            player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+        }
+
         player.teleport(this.getMainLobbyPosition());
         InventoryUtils.resetPlayer(player);
         this.getArenaManager().getSurviveTheNight().getServer()

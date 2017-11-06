@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 public class Generator {
 
     @Getter private final SurviveTheNight surviveTheNight;
+    @Getter private final Arena arena;
     @Getter private final Block block;
     @Getter @Setter private boolean running = false;
     @Getter @Setter private int fuelPercentage = 0;
@@ -30,8 +31,9 @@ public class Generator {
     @Getter private final ArmorStand armorStand;
     @Getter private final ArmorStand armorStand2;
 
-    public Generator(SurviveTheNight surviveTheNight, Block block) {
+    public Generator(SurviveTheNight surviveTheNight, Arena arena, Block block) {
         this.surviveTheNight = surviveTheNight;
+        this.arena = arena;
         this.block = block;
 
         this.armorStand = block.getWorld().spawn(block.getRelative(BlockFace.UP).getLocation().clone(), ArmorStand.class);
@@ -74,6 +76,22 @@ public class Generator {
                 armorStand.remove();
                 armorStand2.setCustomName(ChatColor.translateAlternateColorCodes('&', "&a&l✓ &aGenerator &a&l✓"));
                 armorStand2.setCustomNameVisible(true);
+
+                int generatorsFilled = this.getArena().getGameRunnable().getGeneratorsFilled();
+
+                if(generatorsFilled < (this.getArena().getGeneratorsNeeded()+1)) {
+                    this.getArena().getScoreboardMap().values().forEach(scoreboard -> {
+                        if(generatorsFilled == this.getArena().getGeneratorsNeeded()) {
+                            scoreboard.add("&aOpen", 7);
+                        }
+                        scoreboard.add("&f" + (this.getArena().getGeneratorsNeeded()-generatorsFilled) + " Generators until", 5);
+                        scoreboard.update();
+                    });
+                }
+
+                if(generatorsFilled == this.getArena().getGeneratorsNeeded()) {
+                    //TODO: Open Exit Gates
+                }
 
                 try {
                     NMSUtils.clearTitle(player);
