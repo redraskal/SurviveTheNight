@@ -8,10 +8,12 @@ import me.redraskal.survivethenight.utils.*;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -61,8 +63,7 @@ public class GamePostStartRunnable extends BukkitRunnable {
             if(scoreboard != null) {
                 scoreboard.reset();
 
-                scoreboard.setTitle(this.getArena().getArenaManager().getSurviveTheNight()
-                        .buildMessage("&9Sur&dv&ci&6v&ee &8» &700:00"));
+                scoreboard.setTitle("&9Sur&dv&ci&6v&ee &8» &715:00");
 
                 scoreboard.add("&4", 12);
                 scoreboard.add("&f&lGenerators", 11);
@@ -157,12 +158,23 @@ public class GamePostStartRunnable extends BukkitRunnable {
                         entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, Integer.MAX_VALUE, 0, false, false), true);
                         entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.POISON, Integer.MAX_VALUE, 0, false, false), true);
                         entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, false, false), true);
+
+                        entry.getKey().getInventory().setItem(1, this.getArena().getArenaManager()
+                                .getSurviveTheNight().getCustomItemManager().getLightItemStack());
+                        entry.getKey().getInventory().setItem(2, this.getArena().getArenaManager()
+                                .getSurviveTheNight().getCustomItemManager().getLightItemStack());
+                        entry.getKey().getInventory().setItem(8, new ItemStack(Material.WATCH, 1));
                     } else {
                         entry.getKey().teleport(ironGolem.getLocation());
 
                         entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false), true);
                         entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 0, false, false), true);
                         entry.getKey().addPotionEffect(new PotionEffect(PotionEffectType.WITHER, Integer.MAX_VALUE, 0, false, false), true);
+
+                        entry.getKey().getInventory().setItem(0, this.getArena().getArenaManager()
+                                .getSurviveTheNight().getCustomItemManager().getRustyAxeItemStack());
+                        entry.getKey().getInventory().setItem(1, this.getArena().getArenaManager()
+                                .getSurviveTheNight().getCustomItemManager().getFishingHookItemStack());
 
                         try {
                             NMSUtils.removeEntityClientSide(entry.getKey(), ironGolem);

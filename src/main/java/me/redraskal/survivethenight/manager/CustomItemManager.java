@@ -22,6 +22,9 @@ public class CustomItemManager {
     @Getter private final ItemStack lightItemStack;
     @Getter private final ItemStack bandageItemStack;
 
+    @Getter private final ItemStack rustyAxeItemStack;
+    @Getter private final ItemStack fishingHookItemStack;
+
     public CustomItemManager(SurviveTheNight surviveTheNight) {
         this.surviveTheNight = surviveTheNight;
 
@@ -35,6 +38,12 @@ public class CustomItemManager {
 
         this.bandageItemStack = new ItemStack(Material.PAPER, 1);
         this.applyDisplayName(this.bandageItemStack, "&c&lBandage &7(Self-heal)");
+
+        this.rustyAxeItemStack = new ItemStack(Material.IRON_AXE, 1);
+        this.applyDisplayName(this.rustyAxeItemStack, "&d&lRusty Axe");
+
+        this.fishingHookItemStack = new ItemStack(Material.FISHING_ROD, 1);
+        this.applyDisplayName(this.fishingHookItemStack, "&b&lFishing Hook");
     }
 
     public boolean isSameItem(ItemStack itemStack, ItemStack comparing) {

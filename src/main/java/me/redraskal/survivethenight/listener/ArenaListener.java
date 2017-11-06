@@ -109,6 +109,13 @@ public class ArenaListener implements Listener {
         if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
         if(this.getArena().getGameState() != GameState.INGAME) {
             event.setCancelled(true);
+        } else {
+            if(event.getItemDrop().getItemStack().getType() == Material.WATCH) {
+                event.setCancelled(true);
+            }
+            if(this.getArena().getPlayerRoles().get(event.getPlayer()) == PlayerRole.KILLER) {
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -116,6 +123,10 @@ public class ArenaListener implements Listener {
     public void onItemPickup(PlayerPickupItemEvent event) {
         if(!this.getArena().getPlayers().contains(event.getPlayer())) return;
         if(this.getArena().getGameState() != GameState.INGAME) return;
+        if(this.getArena().getPlayerRoles().get(event.getPlayer()) == PlayerRole.KILLER) {
+            event.setCancelled(true);
+            return;
+        }
         event.getPlayer().getInventory().forEach(itemStack -> {
             if(this.getArenaManager().getSurviveTheNight().getCustomItemManager()
                     .isSameItem(itemStack, event.getItem().getItemStack())) {

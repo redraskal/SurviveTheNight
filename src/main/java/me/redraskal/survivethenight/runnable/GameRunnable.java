@@ -7,6 +7,7 @@ import me.redraskal.survivethenight.utils.NMSUtils;
 import me.redraskal.survivethenight.utils.Sounds;
 import org.bukkit.Location;
 import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
@@ -28,6 +29,12 @@ public class GameRunnable extends BukkitRunnable {
     @Getter private final List<Closet> closets = new ArrayList<>();
 
     private int ticks = 0;
+    private boolean morning = false;
+    private int hour = 8;
+    private int seconds = 0;
+
+    private int minutesLeft = 15;
+    private int secondsLeft = 0;
 
     public GameRunnable(Arena arena, IronGolem ironGolem) {
         this.arena = arena;
@@ -71,10 +78,68 @@ public class GameRunnable extends BukkitRunnable {
         }
 
         if(ticks % 20 == 0) {
+            this.getArena().getBounds().getWorld().setTime(
+                    this.getArena().getBounds().getWorld().getTime()+6L);
+
+            if(ticks % 40 == 0) {
+                if(seconds >= 59) {
+                    seconds = 0;
+                    if(hour == 12) {
+                        hour = 1;
+                    } else {
+                        hour++;
+                    }
+                    if(hour == 12) morning = true;
+                } else {
+                    seconds++;
+                }
+            }
+
+            String f_seconds = "" + seconds;
+            if(seconds < 10) f_seconds = "0" + f_seconds;
+            final String ff_seconds = f_seconds;
+            String timeMarker = "PM";
+            if(morning) timeMarker = "AM";
+            final String f_timeMarker = timeMarker;
+
+            if(secondsLeft <= 0) {
+                if(minutesLeft <= 0) {
+                    this.cancel();
+                    this.getArena().setGameState(GameState.FINISHED);
+                    this.getArena().setGameRunnable(null);
+
+                    //TODO: Fireworks and all :D
+
+                    List<Player> players = new ArrayList<>();
+                    players.addAll(this.getArena().getPlayers());
+
+                    players.forEach(player -> this.getArena().removePlayer(player));
+                } else {
+                    minutesLeft--;
+                    secondsLeft = 59;
+                }
+            } else {
+                secondsLeft--;
+            }
+
+            String f_minutesLeft = "" + minutesLeft;
+            String f_secondsLeft = "" + secondsLeft;
+
+            if(minutesLeft < 10) f_minutesLeft = "0" + f_minutesLeft;
+            if(secondsLeft < 10) f_secondsLeft = "0" + f_secondsLeft;
+
+            final String ff_minutesLeft = f_minutesLeft;
+            final String ff_secondsLeft = f_secondsLeft;
+
+            this.getArena().getScoreboardMap().values().forEach(scoreboard -> {
+                scoreboard.setTitle("&9Sur&dv&ci&6v&ee &8» &7" + ff_minutesLeft + ":" + ff_secondsLeft);
+            });
+
             this.getArena().getPlayers().forEach(player -> {
                 try {
                     this.getArena().getArenaManager().getSurviveTheNight()
-                            .getBossBarManager().sendBossBar(player, "7:00 PM &8⏐ &e"
+                            .getBossBarManager().sendBossBar(player, "" + hour + ":" + ff_seconds
+                            + " " + f_timeMarker + " &8⏐ &e"
                             + this.getGeneratorsFilled() + "&7/&e"
                             + this.getArena().getGeneratorsNeeded() + " &fGenerators powered");
                 } catch (InvocationTargetException e) {
