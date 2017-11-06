@@ -47,6 +47,7 @@ public class SignManager {
                 this.getSignInfoList().add(new SignInfo(sign, arenaID, signType));
             }
         });
+        this.getSignInfoList().forEach(signInfo -> this.updateSignState(signInfo));
     }
 
     public boolean createSign(SignInfo signInfo) {
