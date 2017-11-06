@@ -4,11 +4,17 @@ import lombok.Getter;
 import lombok.Setter;
 import me.redraskal.survivethenight.listener.ArenaListener;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import me.redraskal.survivethenight.runnable.GamePostStartRunnable;
+import me.redraskal.survivethenight.runnable.GameRunnable;
+import me.redraskal.survivethenight.runnable.GameStartRunnable;
 import me.redraskal.survivethenight.utils.Cuboid;
+import me.redraskal.survivethenight.utils.InventoryUtils;
+import me.redraskal.survivethenight.utils.NMSUtils;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +32,13 @@ public class Arena {
     @Getter private final int arenaid;
 
     @Getter private ArenaListener arenaListener;
+    @Getter @Setter private GameState gameState = GameState.LOBBY;
     @Getter private List<Player> players = new ArrayList<>();
+    @Getter private Map<Player, PlayerRole> playerRoles = new HashMap<>();
+
+    @Getter @Setter private GameStartRunnable gameStartRunnable;
+    @Getter @Setter private GamePostStartRunnable gamePostStartRunnable;
+    @Getter @Setter private GameRunnable gameRunnable;
 
     @Getter @Setter private Location lobbyPosition;
     @Getter @Setter private Location mainLobbyPosition;
@@ -50,6 +62,10 @@ public class Arena {
                 .registerEvents(this.getArenaListener(), this.getArenaManager().getSurviveTheNight());
     }
 
+    public void broadcastMessage(String message) {
+        this.getPlayers().forEach(player -> player.sendMessage(message));
+    }
+
     public boolean addPlayer(Player player) {
         if(this.getPlayers().contains(player)) {
             player.sendMessage(this.getArenaManager().getSurviveTheNight().buildMessage("<prefix> &cYou are already in this arena."));
@@ -59,17 +75,111 @@ public class Arena {
             player.sendMessage(this.getArenaManager().getSurviveTheNight().buildMessage("<prefix> &cThis arena has not been setup yet."));
             return false;
         }
+
         this.getPlayers().add(player);
         player.teleport(this.getLobbyPosition());
-        //TODO: Some join message thing, and a separate chat channel
+        InventoryUtils.resetPlayer(player);
+        this.getPlayerRoles().put(player, PlayerRole.SURVIVOR);
+        this.broadcastMessage(this.getArenaManager().getSurviveTheNight().buildMessage("&9" + player.getName() + " &6wants to survive!"));
+
+        try {
+            this.getArenaManager().getSurviveTheNight().getBossBarManager().sendBossBar(player, "&bPlaying &7» &e&lSurvive The Night");
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if(this.getPlayers().size() == this.getMinPlayers()) this.gameStartRunnable = new GameStartRunnable(this);
+        if(this.getGameStartRunnable() != null && this.getCapacity() >= 50D && this.getGameStartRunnable().getCountdown() >= 60) {
+            this.getGameStartRunnable().setCountdown(60);
+            this.broadcastMessage(this.getArenaManager().getSurviveTheNight().buildMessage("<prefix> &6The timer has been shortened to 60 seconds."));
+        }
+        if(this.getGameStartRunnable() != null && this.getCapacity() >= 75D && this.getGameStartRunnable().getCountdown() >= 15) {
+            this.getGameStartRunnable().setCountdown(15);
+            this.broadcastMessage(this.getArenaManager().getSurviveTheNight().buildMessage("<prefix> &aWe almost have a full server!"));
+            this.broadcastMessage(this.getArenaManager().getSurviveTheNight().buildMessage("<prefix> &6The timer has been shortened to 15 seconds."));
+        }
+
         return true;
     }
 
     public boolean removePlayer(Player player) {
         if(!this.getPlayers().contains(player)) return false;
+
         this.getPlayers().remove(player);
+        if(this.getPlayerRoles().containsKey(player)) {
+            if(this.getPlayerRoles().get(player) == PlayerRole.KILLER) {
+                if(this.getGamePostStartRunnable() != null) {
+                    if(this.getGamePostStartRunnable().getNpcMap().containsKey(player)) {
+                        this.getGamePostStartRunnable().getNpcMap().get(player).despawn();
+                        this.getGamePostStartRunnable().getNpcMap().remove(player);
+                    }
+                    if(this.getGamePostStartRunnable().getArmorStandMap().containsKey(player)) {
+                        this.getGamePostStartRunnable().getArmorStandMap().get(player).remove();
+                        this.getGamePostStartRunnable().getArmorStandMap().remove(player);
+                        try {
+                            NMSUtils.sendCameraPacket(player, player.getEntityId(),
+                                    this.getArenaManager().getSurviveTheNight());
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchFieldException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    this.getGamePostStartRunnable().getIronGolem().remove();
+                } else {
+                    if(this.getGameRunnable() != null) {
+                        this.getGameRunnable().getIronGolem().remove();
+                    }
+                }
+            }
+            this.getPlayerRoles().remove(player);
+        }
         player.teleport(this.getMainLobbyPosition());
-        //TODO: Some leave message thing, leave separate chat channel
+        InventoryUtils.resetPlayer(player);
+
+        try {
+            this.getArenaManager().getSurviveTheNight().getBossBarManager().removeBar(player);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        if(this.getPlayers().size() == (this.getMinPlayers()-1)) {
+            if(this.getGameStartRunnable() != null) {
+                this.getGameStartRunnable().cancel();
+                this.broadcastMessage(this.getArenaManager().getSurviveTheNight()
+                        .buildMessage("&cNot enough players are in the arena to start the game."));
+                this.setGameStartRunnable(null);
+            }
+            if(this.getGameState() != GameState.LOBBY) {
+                this.setGameState(GameState.LOBBY);
+                //TODO: Reset state
+            }
+        }
+
         return true;
     }
 
@@ -80,5 +190,9 @@ public class Arena {
                 && generators != null && generators.size() > 0
                 && bounds != null && doors != null && doors.size() > 0
                 && areas != null && gates != null && gates.size() > 0);
+    }
+
+    public double getCapacity() {
+        return (((double)this.getPlayers().size()/(double)this.getMaxPlayers())*100D);
     }
 }

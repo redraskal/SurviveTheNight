@@ -3,6 +3,7 @@ name: ${project.name}
 author: redraskal
 version: ${project.version}
 load: POSTWORLD
+depend: [Citizens]
 softdepend: [Multiverse-Core]
 description: "A Halloween minigame from The HiveMC Network."
 website: "https://github.com/redraskal/SurviveTheNight"

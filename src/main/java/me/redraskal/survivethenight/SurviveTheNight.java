@@ -2,8 +2,13 @@ package me.redraskal.survivethenight;
 
 import lombok.Getter;
 import me.redraskal.survivethenight.command.MainCommand;
+import me.redraskal.survivethenight.game.Arena;
 import me.redraskal.survivethenight.listener.WandListener;
 import me.redraskal.survivethenight.manager.ArenaManager;
+import me.redraskal.survivethenight.manager.BossBarManager;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPCRegistry;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,8 +30,11 @@ public class SurviveTheNight extends JavaPlugin {
     private File f_arenaConfig;
     @Getter private YamlConfiguration arenaConfig;
 
+    @Getter private BossBarManager bossBarManager;
     @Getter private ArenaManager arenaManager;
     @Getter private WandListener wandListener;
+
+    @Getter private NPCRegistry registry;
 
     public void onEnable() {
         this.getDataFolder().mkdirs();
@@ -49,12 +57,29 @@ public class SurviveTheNight extends JavaPlugin {
         }
         this.arenaConfig = YamlConfiguration.loadConfiguration(f_arenaConfig);
 
+        this.registry = CitizensAPI.getNPCRegistry();
+
+        try {
+            this.bossBarManager = new BossBarManager(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.arenaManager = new ArenaManager(this);
         this.wandListener = new WandListener(this);
 
         this.getServer().getPluginManager().registerEvents(wandListener, this);
 
         this.getCommand("survive").setExecutor(new MainCommand(this));
+    }
+
+    public void onDisable() {
+        this.getRegistry().deregisterAll();
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            Arena arena = this.getArenaManager().getArena(player);
+            if(arena != null) arena.removePlayer(player);
+        });
     }
 
     public String buildMessage(String message) {

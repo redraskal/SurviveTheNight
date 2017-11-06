@@ -31,7 +31,11 @@ public class LocationUtils {
     }
 
     public static Location faceEntity(Location location, Entity entity) {
-        Vector direction = location.toVector().subtract(entity.getLocation().toVector());
+        return faceLocation(location, entity.getLocation());
+    }
+
+    public static Location faceLocation(Location location, Location facing) {
+        Vector direction = location.toVector().subtract(facing.toVector());
         direction.multiply(-1);
         location.setDirection(direction);
         return location;
